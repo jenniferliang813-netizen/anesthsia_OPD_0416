@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🏥 麻醉門診衛教資訊系統</title>
+  <style>
+    :root {
+      --primary: #1A4FA0; --primary-light: #3A70C5; --primary-dark: #0E3278;
+      --accent: #F0A500; --accent-light: #FFD04D;
+      --success: #1A9E5A; --success-light: #E8FFF3;
+      --warning: #D94F3B; --warning-bg: #FFF3F1;
+      --bg: #F0F5FF; --card: #FFFFFF; --text: #1A2332;
+      --text-mid: #3A4A5A; --text-light: #6A7A8A;
+      --border: #C8D8F0; --shadow: 0 4px 20px rgba(26,79,160,0.10);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Noto Sans TC','PingFang TC','Microsoft JhengHei',Arial,sans-serif; background: var(--bg); color: var(--text); font-size: 20px; min-height: 100vh; -webkit-text-size-adjust: 100%; }
+
+    /* HEADER */
+    .header { background: linear-gradient(135deg,var(--primary-dark),var(--primary)); color: white; padding: 18px 20px 14px; text-align: center; position: sticky; top: 0; z-index: 200; box-shadow: 0 3px 16px rgba(0,0,0,0.25); }
+    .header-title { font-size: 24px; font-weight: 900; letter-spacing: 1px; }
+    .header-sub { font-size: 15px; opacity: 0.82; margin-top: 3px; }
+
+    /* PROGRESS */
+    .progress-bar-wrap { background: white; padding: 12px 16px 10px; border-bottom: 2px solid var(--border); position: sticky; top: 72px; z-index: 190; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .progress-steps { display: flex; justify-content: space-between; align-items: center; max-width: 640px; margin: 0 auto; }
+    .step { display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 0 0 auto; }
+    .step-circle { width: 38px; height: 38px; border-radius: 50%; background: #D8E4F8; color: #8A9AAA; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold; transition: all 0.35s ease; border: 2px solid transparent; }
+    .step.active .step-circle { background: var(--primary); color: white; border-color: var(--primary-light); box-shadow: 0 0 0 4px rgba(58,112,197,0.2); }
+    .step.completed .step-circle { background: var(--success); color: white; border-color: var(--success); }
+    .step-label { font-size: 12px; color: var(--text-light); text-align: center; white-space: nowrap; }
+    .step.active .step-label { color: var(--primary); font-weight: 700; }
+    .step.completed .step-label { color: var(--success); }
+    .step-line { flex: 1; height: 3px; background: #D8E4F8; margin: 0 3px; margin-bottom: 22px; border-radius: 2px; transition: background 0.35s; }
+    .step-line.done { background: var(--success); }
+
+    /* PAGES */
+    .page { display: none; padding: 20px 16px 120px; max-width: 800px; margin: 0 auto; animation: fadeUp 0.4s ease; }
+    .page.active { display: block; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+
+    /* CARD */
+    .card { background: var(--card); border-radius: 20px; padding: 22px 20px; margin-bottom: 18px; box-shadow: var(--shadow); border: 1px solid rgba(200,216,240,0.6); }
+    .card-title { font-size: 22px; font-weight: 800; color: var(--primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; line-height: 1.3; }
+    .card-subtitle { font-size: 18px; color: var(--text-mid); line-height: 1.75; margin-bottom: 6px; }
+    .tw-note { font-size: 15px; color: #7A9ABC; background: #F0F7FF; border-left: 3px solid #7AABDC; padding: 7px 11px; border-radius: 0 8px 8px 0; margin-top: 10px; line-height: 1.6; }
+
+    /* OPTION BUTTONS */
+    .option-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(145px,1fr)); gap: 11px; margin-top: 10px; }
+    .option-grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 11px; margin-top: 10px; }
+    .option-btn { background: white; border: 2.5px solid var(--border); border-radius: 14px; padding: 14px 10px; font-size: 17px; font-weight: 600; color: var(--text); cursor: pointer; text-align: center; transition: all 0.22s; min-height: 66px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.5; -webkit-tap-highlight-color: transparent; }
+    .option-btn:active { transform: scale(0.96); }
+    .option-btn.selected { background: linear-gradient(135deg,var(--primary),var(--primary-light)); border-color: var(--primary); color: white; box-shadow: 0 6px 18px rgba(26,79,160,0.30); transform: translateY(-1px); }
+    .option-btn small { font-size: 13px; font-weight: 400; opacity: 0.85; margin-top: 3px; }
+    .option-btn.selected small { opacity: 0.9; }
+
+    /* NAME INPUT */
+    .name-input { width: 100%; padding: 16px 18px; font-size: 22px; border: 2.5px solid var(--border); border-radius: 14px; margin-top: 12px; background: white; color: var(--text); font-family: inherit; }
+    .name-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(58,112,197,0.12); }
+
+    /* VALIDATION */
+    .validation-msg { display: none; background: var(--warning-bg); color: var(--warning); border: 1px solid #F0B0A0; border-radius: 10px; padding: 12px 16px; font-size: 17px; font-weight: 600; margin-top: 8px; }
+
+    /* ACCORDION */
+    .acc-card { background: var(--card); border-radius: 20px; margin-bottom: 14px; box-shadow: var(--shadow); border: 1px solid rgba(200,216,240,0.6); overflow: hidden; }
+    .acc-header { padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; gap: 10px; }
+    .acc-header-left { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 800; color: var(--primary); flex: 1; }
+    .acc-toggle-icon { font-size: 18px; color: var(--primary); transition: transform 0.3s; flex-shrink: 0; }
+    .acc-card.open .acc-toggle-icon { transform: rotate(180deg); }
+    .acc-body { display: none; padding: 0 20px 20px; border-top: 1px solid var(--border); }
+    .acc-card.open .acc-body { display: block; }
+    .acc-status { font-size: 13px; padding: 3px 10px; border-radius: 20px; font-weight: 600; white-space: nowrap; }
+    .acc-status.done { background: #E8FFF3; color: var(--success); }
+    .acc-status.pending { background: #E8F0FF; color: var(--primary); }
+
+    /* SECTION LABEL */
+    .section-label { font-size: 17px; font-weight: 700; color: var(--text-mid); margin-top: 18px; margin-bottom: 8px; }
+    .section-label:first-child { margin-top: 14px; }
+
+    /* DISEASE TAGS */
+    .tag-grid { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 8px; }
+    .disease-tag { padding: 9px 14px; border: 2px solid var(--border); border-radius: 20px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s; background: white; color: var(--text); -webkit-tap-highlight-color: transparent; }
+    .disease-tag:active { transform: scale(0.96); }
+    .disease-tag.selected { background: var(--primary); border-color: var(--primary); color: white; }
+
+    /* TEXT INPUTS */
+    .text-input { width: 100%; padding: 12px 14px; font-size: 18px; border: 2px solid var(--border); border-radius: 10px; background: white; color: var(--text); font-family: inherit; margin-top: 8px; }
+    .text-input:focus { outline: none; border-color: var(--primary); }
+    .textarea-input { width: 100%; padding: 12px 14px; font-size: 17px; border: 2px solid var(--border); border-radius: 10px; resize: vertical; min-height: 80px; font-family: inherit; color: var(--text); background: white; margin-top: 8px; }
+    .textarea-input:focus { outline: none; border-color: var(--primary); }
+    .time-input { width: 180px; padding: 12px 14px; font-size: 20px; border: 2px solid var(--border); border-radius: 10px; margin-top: 10px; background: white; color: var(--text); display: block; appearance: auto; cursor: pointer; }
+    .time-input:focus { outline: none; border-color: var(--primary); }
+
+    /* SLIDESHOW */
+    .slideshow-outer { border-radius: 16px; overflow: hidden; box-shadow: 0 8px 32px rgba(10,22,40,0.3); margin-top: 14px; background: linear-gradient(150deg,#0B1A38,#0F2B56); }
+    .slide { display: none; min-height: 340px; padding: 28px 24px 22px; color: white; flex-direction: column; justify-content: center; animation: slideFade 0.5s ease; }
+    .slide.active { display: flex; }
+    .slide.danger-slide { background: linear-gradient(150deg,#1A0808,#2C0E0E); }
+    @keyframes slideFade { from { opacity:0; transform:translateX(18px); } to { opacity:1; transform:translateX(0); } }
+    .slide-icon { font-size: 50px; text-align: center; margin-bottom: 14px; }
+    .slide-title { font-size: 26px; font-weight: 900; color: #FFD04D; margin-bottom: 16px; line-height: 1.35; text-align: center; }
+    .slide-body { font-size: 19px; line-height: 2.0; color: #DCE8FF; white-space: pre-line; }
+    .slide-body strong { color: #FFD04D; }
+    .slide-tw { font-size: 15px; color: #90B8E8; background: rgba(255,255,255,0.06); border-left: 3px solid rgba(144,184,232,0.5); padding: 8px 12px; border-radius: 0 8px 8px 0; margin-top: 14px; line-height: 1.65; }
+    .slide-controls { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: rgba(0,0,0,0.35); }
+    .slide-nav-btn { background: rgba(255,255,255,0.18); color: white; border: none; border-radius: 8px; padding: 10px 14px; font-size: 16px; cursor: pointer; font-weight: 600; transition: background 0.2s; -webkit-tap-highlight-color: transparent; }
+    .slide-nav-btn:hover { background: rgba(255,255,255,0.3); }
+    .slide-counter { text-align: center; color: rgba(255,255,255,0.7); font-size: 16px; }
+
+    /* REC CARDS */
+    .rec-card { background: white; border-radius: 16px; padding: 18px 20px; margin-bottom: 14px; border-left: 6px solid var(--primary); box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+    .rec-card.rec-yes { border-left-color: var(--success); background: var(--success-light); }
+    .rec-card.rec-pain { border-left-color: #8A5CF6; background: #FAF5FF; }
+    .rec-head { font-size: 20px; font-weight: 800; margin-bottom: 8px; display: flex; align-items: flex-start; flex-wrap: wrap; gap: 8px; line-height: 1.4; }
+    .rec-badge { background: var(--success); color: white; font-size: 13px; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+    .rec-body { font-size: 17px; color: var(--text-mid); line-height: 1.8; }
+
+    /* SELF-PAY CHOICES */
+    .pay-choices { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+    .pay-btn { flex: 1; min-width: 88px; padding: 10px 8px; border: 2.5px solid var(--border); border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; text-align: center; background: white; transition: all 0.2s; -webkit-tap-highlight-color: transparent; font-family: inherit; }
+    .pay-btn:active { transform: scale(0.96); }
+    .pay-btn.yes-btn { border-color: #1A9E5A; color: #1A9E5A; }
+    .pay-btn.yes-btn.active { background: #1A9E5A; color: white; }
+    .pay-btn.maybe-btn { border-color: #F0A500; color: #8A5C00; }
+    .pay-btn.maybe-btn.active { background: #F0A500; color: white; }
+    .pay-btn.no-btn { border-color: #D94F3B; color: #D94F3B; }
+    .pay-btn.no-btn.active { background: #D94F3B; color: white; }
+
+    /* CHECKLIST */
+    .checklist-item { background: white; border-radius: 14px; padding: 18px; margin-bottom: 12px; border: 2px solid var(--border); cursor: pointer; display: flex; align-items: flex-start; gap: 14px; transition: all 0.22s; -webkit-tap-highlight-color: transparent; }
+    .checklist-item:hover { border-color: var(--primary-light); background: #F8FBFF; }
+    .checklist-item.checked { background: var(--success-light); border-color: var(--success); }
+    .cb-box { width: 34px; height: 34px; min-width: 34px; border: 3px solid var(--border); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 20px; transition: all 0.22s; background: white; }
+    .checklist-item.checked .cb-box { background: var(--success); border-color: var(--success); color: white; }
+    .cb-text { flex: 1; }
+    .cb-main { font-size: 20px; font-weight: 700; margin-bottom: 5px; }
+    .cb-sub { font-size: 16px; color: var(--text-light); line-height: 1.65; }
+
+    /* ALERTS */
+    .alert { border-radius: 14px; padding: 15px 17px; margin: 12px 0; display: flex; align-items: flex-start; gap: 12px; font-size: 18px; line-height: 1.7; }
+    .alert-icon { font-size: 24px; flex-shrink: 0; margin-top: 1px; }
+    .alert-info    { background: #EBF4FF; border: 1px solid #B0CEFF; color: #1A4FA0; }
+    .alert-warning { background: #FFF8E0; border: 1px solid #F0CC70; color: #6B4A00; }
+    .alert-danger  { background: var(--warning-bg); border: 1px solid #F0B0A0; color: #8A2010; }
+    .alert-success { background: var(--success-light); border: 1px solid #80E0B0; color: #0A5030; }
+
+    /* NON-ANESTHESIA LIST */
+    .na-list { font-size: 18px; line-height: 1.8; color: var(--text-mid); padding-left: 24px; margin-top: 10px; }
+    .na-list li { margin-bottom: 8px; }
+
+    /* CHATBOT */
+    .chat-wrap { background: white; border-radius: 18px; border: 1.5px solid var(--border); overflow: hidden; display: flex; flex-direction: column; height: 480px; box-shadow: var(--shadow); }
+    .chat-msgs { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 13px; scroll-behavior: smooth; }
+    .chat-msg { display: flex; gap: 10px; max-width: 88%; }
+    .chat-msg.bot { align-self: flex-start; }
+    .chat-msg.user { align-self: flex-end; flex-direction: row-reverse; }
+    .chat-avatar { width: 42px; height: 42px; min-width: 42px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+    .chat-msg.user .chat-avatar { background: #6A7A9A; }
+    .chat-bubble { background: #EDF3FF; padding: 13px 16px; border-radius: 16px; font-size: 18px; line-height: 1.7; white-space: pre-line; color: var(--text); }
+    .chat-msg.user .chat-bubble { background: var(--primary); color: white; }
+    .chat-input-zone { padding: 12px 14px; background: #F5F8FF; border-top: 1.5px solid var(--border); }
+    .quick-qs { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 10px; }
+    .quick-q { background: white; border: 1.5px solid var(--primary); color: var(--primary); border-radius: 20px; padding: 6px 13px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
+    .quick-q:hover, .quick-q:active { background: var(--primary); color: white; }
+    .chat-row { display: flex; gap: 8px; }
+    .chat-input { flex: 1; padding: 13px 15px; font-size: 18px; border: 1.5px solid var(--border); border-radius: 11px; background: white; color: var(--text); font-family: inherit; }
+    .chat-input:focus { outline: none; border-color: var(--primary); }
+    .chat-send { background: var(--primary); color: white; border: none; border-radius: 11px; padding: 13px 20px; font-size: 18px; font-weight: 700; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+
+    /* BOTTOM NAV */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 14px 16px; display: flex; gap: 12px; border-top: 2px solid var(--border); z-index: 300; box-shadow: 0 -4px 20px rgba(0,0,0,0.10); }
+    .btn-back { background: #E8EEF8; color: var(--primary); border: none; border-radius: 14px; padding: 18px 20px; font-size: 19px; font-weight: 700; cursor: pointer; flex: 0 0 auto; -webkit-tap-highlight-color: transparent; }
+    .btn-next { flex: 1; background: linear-gradient(135deg,var(--primary),var(--primary-light)); color: white; border: none; border-radius: 14px; padding: 18px; font-size: 20px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 18px rgba(26,79,160,0.35); letter-spacing: 0.5px; -webkit-tap-highlight-color: transparent; }
+    .btn-next:active { opacity: 0.9; transform: scale(0.98); }
+    .divider { border: none; border-top: 1.5px solid var(--border); margin: 14px 0; }
+
+    /* FLOATING ADMIN BUTTON */
+    .floating-admin { position: fixed; bottom: 82px; right: 14px; background: #1A2332; color: white; border: none; border-radius: 50%; width: 44px; height: 44px; font-size: 18px; cursor: pointer; z-index: 400; opacity: 0.35; transition: opacity 0.2s; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+    .floating-admin:hover { opacity: 0.9; }
+
+    /* ADMIN MODAL */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1000; overflow-y: auto; padding: 16px; }
+    .modal-overlay.visible { display: flex; align-items: flex-start; justify-content: center; }
+    .modal-box { background: white; border-radius: 20px; padding: 24px; width: 100%; max-width: 1100px; margin: auto; }
+    .modal-toprow { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+    .modal-title { font-size: 22px; font-weight: 900; color: var(--primary); }
+    .modal-close { background: #E8EEF8; border: none; border-radius: 8px; padding: 8px 16px; font-size: 16px; cursor: pointer; font-weight: 700; color: var(--primary); }
+    .pw-form { display: flex; gap: 10px; margin-bottom: 20px; }
+    .pw-input { flex: 1; padding: 12px 16px; font-size: 18px; border: 2px solid var(--border); border-radius: 10px; font-family: inherit; }
+    .pw-input:focus { outline: none; border-color: var(--primary); }
+    .pw-submit { background: var(--primary); color: white; border: none; border-radius: 10px; padding: 12px 20px; font-size: 17px; font-weight: 700; cursor: pointer; }
+    .pw-error { color: var(--warning); font-size: 16px; margin-top: 6px; display: none; }
+    .admin-content { display: none; }
+    .admin-content.visible { display: block; }
+    .admin-actions { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+    .admin-btn-action { padding: 10px 18px; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
+    .admin-btn-refresh { background: #E8F0FF; color: var(--primary); }
+    .admin-btn-export { background: var(--success-light); color: #0A5030; }
+    .admin-btn-clear { background: var(--warning-bg); color: var(--warning); }
+    .records-table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
+    .records-table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 900px; }
+    .records-table th { background: var(--primary); color: white; padding: 10px 12px; text-align: left; white-space: nowrap; font-size: 13px; }
+    .records-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; font-size: 14px; max-width: 160px; word-wrap: break-word; }
+    .records-table tr:hover td { background: #F0F5FF; }
+    .no-data-row td { text-align: center; color: var(--text-light); padding: 30px; font-size: 16px; }
+    .pay-chip { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; margin: 2px; }
+    .pay-chip.yes { background: #E8FFF3; color: #0A5030; }
+    .pay-chip.maybe { background: #FFF8E0; color: #6B4A00; }
+    .pay-chip.no { background: #FFF3F1; color: #8A2010; }
+    .admin-note { font-size: 14px; color: var(--text-light); margin-top: 12px; padding: 10px 14px; background: #F0F5FF; border-radius: 10px; }
+
+    @media (max-width: 480px) {
+      .slide-title { font-size: 22px; } .slide-body { font-size: 17px; }
+      .option-grid { grid-template-columns: repeat(2,1fr); }
+      .option-grid-3 { grid-template-columns: repeat(3,1fr); }
+      .pay-btn { font-size: 14px; padding: 9px 6px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">🏥 麻醉門診衛教資訊系統</div>
+  <div class="header-sub">請掃描QR Code，進入門診前先閱讀</div>
+</div>
+
+<div class="progress-bar-wrap">
+  <div class="progress-steps">
+    <div class="step active" id="step-1"><div class="step-circle" id="sc-1">1</div><div class="step-label">基本資料</div></div>
+    <div class="step-line" id="line-12"></div>
+    <div class="step" id="step-2"><div class="step-circle" id="sc-2">2</div><div class="step-label">衛教填寫</div></div>
+    <div class="step-line" id="line-23"></div>
+    <div class="step" id="step-3"><div class="step-circle" id="sc-3">3</div><div class="step-label">自費項目</div></div>
+    <div class="step-line" id="line-34"></div>
+    <div class="step" id="step-4"><div class="step-circle" id="sc-4">4</div><div class="step-label">就診提醒</div></div>
+    <div class="step-line" id="line-45"></div>
+    <div class="step" id="step-5"><div class="step-circle" id="sc-5">5</div><div class="step-label">問答</div></div>
+  </div>
+</div>
+
+<!-- ===== PAGE 1: 基本資料 ===== -->
+<div class="page active" id="page-1">
+  <div class="card">
+    <div class="card-title">👋 歡迎，請先填寫基本資料</div>
+    <div class="card-subtitle">以下資料有助於醫師為您規劃最安全的麻醉方式。</div>
+    <div class="tw-note">🗣 台語：填這些資料，幫助醫師為你安排上好的麻醉方式。免驚，選最接近的就好。</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">👤 病人姓名</div>
+    <input type="text" class="name-input" id="patient-name" placeholder="請輸入姓名" oninput="P.name=this.value.trim(); document.getElementById('v-msg').style.display='none'">
+  </div>
+
+  <div class="card">
+    <div class="card-title">📅 年齡區間</div>
+    <div class="option-grid" id="opt-age">
+      <button class="option-btn" data-g="age" data-v="18-40" onclick="pick(this)">18 – 40 歲</button>
+      <button class="option-btn" data-g="age" data-v="41-60" onclick="pick(this)">41 – 60 歲</button>
+      <button class="option-btn" data-g="age" data-v="61-70" onclick="pick(this)">61 – 70 歲</button>
+      <button class="option-btn" data-g="age" data-v="71-80" onclick="pick(this)">71 – 80 歲</button>
+      <button class="option-btn" data-g="age" data-v="80+" onclick="pick(this)">80 歲以上</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📏 身高區間</div>
+    <div class="option-grid" id="opt-height">
+      <button class="option-btn" data-g="height" data-v="<150" onclick="pick(this)">150 cm 以下</button>
+      <button class="option-btn" data-g="height" data-v="150-160" onclick="pick(this)">150–160 cm</button>
+      <button class="option-btn" data-g="height" data-v="161-170" onclick="pick(this)">161–170 cm</button>
+      <button class="option-btn" data-g="height" data-v="171-180" onclick="pick(this)">171–180 cm</button>
+      <button class="option-btn" data-g="height" data-v=">180" onclick="pick(this)">180 cm 以上</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">⚖️ 體重區間</div>
+    <div class="option-grid" id="opt-weight">
+      <button class="option-btn" data-g="weight" data-v="<50" onclick="pick(this)">50 kg 以下</button>
+      <button class="option-btn" data-g="weight" data-v="50-60" onclick="pick(this)">50–60 kg</button>
+      <button class="option-btn" data-g="weight" data-v="61-70" onclick="pick(this)">61–70 kg</button>
+      <button class="option-btn" data-g="weight" data-v="71-80" onclick="pick(this)">71–80 kg</button>
+      <button class="option-btn" data-g="weight" data-v="81-90" onclick="pick(this)">81–90 kg</button>
+      <button class="option-btn" data-g="weight" data-v=">90" onclick="pick(this)">90 kg 以上</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🏥 手術類型</div>
+    <div class="option-grid" style="grid-template-columns:repeat(auto-fill,minmax(155px,1fr));" id="opt-surgery">
+      <button class="option-btn" data-g="surgery" data-v="一般外科" onclick="pick(this)">🩺 一般外科手術</button>
+      <button class="option-btn" data-g="surgery" data-v="大腸直腸科" onclick="pick(this)">⚕️ 大腸直腸科手術</button>
+      <button class="option-btn" data-g="surgery" data-v="骨科上肢" onclick="pick(this)">🦾 骨科上肢手術</button>
+      <button class="option-btn" data-g="surgery" data-v="骨科下肢" onclick="pick(this)">🦵 骨科下肢手術</button>
+      <button class="option-btn" data-g="surgery" data-v="脊椎" onclick="pick(this)">🦴 脊椎手術</button>
+      <button class="option-btn" data-g="surgery" data-v="腦部" onclick="pick(this)">🧠 腦部手術</button>
+      <button class="option-btn" data-g="surgery" data-v="耳鼻喉" onclick="pick(this)">👂 耳鼻喉科手術</button>
+      <button class="option-btn" data-g="surgery" data-v="泌尿科" onclick="pick(this)">💊 泌尿科手術</button>
+      <button class="option-btn" data-g="surgery" data-v="口腔外科" onclick="pick(this)">🦷 口腔外科手術</button>
+      <button class="option-btn" data-g="surgery" data-v="牙科" onclick="pick(this)">🦷 牙科手術</button>
+      <button class="option-btn" data-g="surgery" data-v="整形外科" onclick="pick(this)">✨ 整形外科手術</button>
+      <button class="option-btn" data-g="surgery" data-v="婦科" onclick="pick(this)">👩‍⚕️ 婦科手術</button>
+      <button class="option-btn" data-g="surgery" data-v="產科" onclick="pick(this)">🤱 產科手術</button>
+      <button class="option-btn" data-g="surgery" data-v="胸腔外科" onclick="pick(this)">🫁 胸腔外科手術</button>
+      <button class="option-btn" data-g="surgery" data-v="心臟" onclick="pick(this)">❤️ 心臟手術</button>
+      <button class="option-btn" data-g="surgery" data-v="血管" onclick="pick(this)">🩸 血管手術</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">💉 麻醉方式</div>
+    <div class="card-subtitle">請選擇醫師預定安排的麻醉方式（若未確認可請護理師協助）</div>
+    <div class="tw-note">🗣 台語：選你要做啥款麻醉？若毋知，問護理師。</div>
+    <div class="option-grid-3" id="opt-anesthesia" style="margin-top:14px;">
+      <button class="option-btn" data-g="anesthesia" data-v="全身麻醉" onclick="pick(this)" style="min-height:88px;">😴 全身麻醉<small>整個人睏去</small></button>
+      <button class="option-btn" data-g="anesthesia" data-v="半身麻醉" onclick="pick(this)" style="min-height:88px;">💉 半身麻醉<small>下半身無感覺</small></button>
+      <button class="option-btn" data-g="anesthesia" data-v="靜脈麻醉" onclick="pick(this)" style="min-height:88px;">💊 靜脈麻醉<small>淺眠 / 鎮靜</small></button>
+    </div>
+  </div>
+
+  <div class="validation-msg" id="v-msg">⚠️ 請填寫姓名並選擇所有欄位後再繼續</div>
+</div>
+
+<!-- ===== PAGE 2: 衛教填寫 (3 accordion sections) ===== -->
+<div class="page" id="page-2">
+  <div class="card">
+    <div class="card-title">📋 衛教與自評填寫</div>
+    <div class="card-subtitle">以下三個項目可依需要展開填寫，<strong>不須全部填完</strong>即可繼續。</div>
+    <div class="tw-note">🗣 台語：以下三項可以選擇填，毋免全部填完才能繼續，按自己需求選擇。</div>
+  </div>
+
+  <!-- Section A: 麻醉方式介紹 -->
+  <div class="acc-card" id="acc-anesthesia">
+    <div class="acc-header" onclick="toggleAcc('acc-anesthesia')">
+      <div class="acc-header-left">🎬 <span id="acc-a-title">麻醉方式介紹</span></div>
+      <span class="acc-status pending" id="acc-a-status">點擊展開</span>
+      <span class="acc-toggle-icon">▼</span>
+    </div>
+    <div class="acc-body">
+      <div class="slideshow-outer">
+        <div id="slide-host"></div>
+        <div class="slide-controls">
+          <button class="slide-nav-btn" onclick="prevSlide()">◀ 上頁</button>
+          <button class="slide-nav-btn" style="background:#F0A500;color:#1A0A00;font-weight:700;" onclick="playTTS()" id="tts-btn">🔊 語音</button>
+          <div class="slide-counter" id="slide-ctr">1 / 1</div>
+          <button class="slide-nav-btn" onclick="nextSlide()">下頁 ▶</button>
+        </div>
+      </div>
+      <div class="alert alert-success" style="margin-top:12px;">
+        <span class="alert-icon">✅</span><span>閱讀完所有投影片後，可折疊此區塊繼續填寫其他項目。</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section B: 病人自評表 -->
+  <div class="acc-card" id="acc-assess">
+    <div class="acc-header" onclick="toggleAcc('acc-assess')">
+      <div class="acc-header-left">📝 病人自評表</div>
+      <span class="acc-status pending" id="acc-b-status">點擊展開</span>
+      <span class="acc-toggle-icon">▼</span>
+    </div>
+    <div class="acc-body">
+      <!-- 疾病史 -->
+      <div class="section-label">🏥 疾病史（可複選）</div>
+      <div class="tag-grid" id="disease-tags">
+        <button class="disease-tag" onclick="toggleDisease(this,'高血壓')">高血壓</button>
+        <button class="disease-tag" onclick="toggleDisease(this,'糖尿病')">糖尿病</button>
+        <button class="disease-tag" onclick="toggleDisease(this,'冠心病')">冠心病</button>
+        <button class="disease-tag" onclick="toggleDisease(this,'心律不整')">心律不整</button>
+        <button class="disease-tag" onclick="toggleDisease(this,'心臟衰竭')">心臟衰竭</button>
+        <button class="disease-tag" onclick="toggleDisease(this,'中風')">中風</button>
+        <button class="disease-tag" onclick="toggleDisease(this,'氣喘')">氣喘</button>
+        <button class="disease-tag" onclick="toggleDisease(this,'慢性阻塞性肺病')">慢性阻塞性肺病</button>
+        <button class="disease-tag" onclick="toggleDisease(this,'腎臟病')">腎臟病</button>
+        <button class="disease-tag" onclick="toggleDisease(this,'洗腎')">洗腎</button>
+        <button class="disease-tag" onclick="toggleDisease(this,'神經疾病')">神經疾病</button>
+        <button class="disease-tag" onclick="toggleDisease(this,'癲癇')">癲癇</button>
+        <button class="disease-tag" onclick="toggleDisease(this,'甲狀腺疾病')">甲狀腺疾病</button>
+        <button class="disease-tag" onclick="toggleDisease(this,'肝臟疾病')">肝臟疾病</button>
+        <button class="disease-tag" onclick="toggleDisease(this,'癌症')">癌症</button>
+        <button class="disease-tag" onclick="toggleDisease(this,'無以上疾病')" id="tag-none">無以上疾病</button>
+      </div>
+      <input type="text" class="text-input" id="disease-other" placeholder="其他疾病（選填）" oninput="P.diseaseOther=this.value">
+
+      <div class="divider"></div>
+
+      <!-- 過敏史 -->
+      <div class="section-label">💊 藥物過敏史</div>
+      <div class="tag-grid">
+        <button class="disease-tag" onclick="toggleAllergyTag(this,'磺胺類藥物')">磺胺類藥物</button>
+        <button class="disease-tag" onclick="toggleAllergyTag(this,'盤尼西林/抗生素')">盤尼西林/抗生素</button>
+        <button class="disease-tag" onclick="toggleAllergyTag(this,'NSAIDs消炎藥')">NSAIDs消炎藥</button>
+        <button class="disease-tag" onclick="toggleAllergyTag(this,'碘顯影劑')">碘顯影劑</button>
+        <button class="disease-tag" onclick="toggleAllergyTag(this,'乳膠手套')">乳膠手套</button>
+        <button class="disease-tag" onclick="toggleAllergyTag(this,'無藥物過敏')">無藥物過敏</button>
+      </div>
+      <input type="text" class="text-input" id="drug-allergy" placeholder="其他藥物過敏（請填寫藥名與反應）" oninput="P.drugAllergy=this.value">
+      <div class="section-label">🍎 食物 / 其他過敏</div>
+      <input type="text" class="text-input" id="other-allergy" placeholder="例如：海鮮、花生、乳製品⋯（選填）" oninput="P.otherAllergy=this.value">
+
+      <div class="divider"></div>
+
+      <!-- 麻醉史 -->
+      <div class="section-label">💉 麻醉史（過去接受過的麻醉，可複選）</div>
+      <div class="tag-grid">
+        <button class="disease-tag" onclick="toggleAnesHistory(this,'全身麻醉')">全身麻醉</button>
+        <button class="disease-tag" onclick="toggleAnesHistory(this,'半身麻醉')">半身麻醉</button>
+        <button class="disease-tag" onclick="toggleAnesHistory(this,'靜脈麻醉')">靜脈麻醉</button>
+        <button class="disease-tag" onclick="toggleAnesHistory(this,'局部麻醉')">局部麻醉</button>
+        <button class="disease-tag" onclick="toggleAnesHistory(this,'未曾接受麻醉')">未曾接受麻醉</button>
+      </div>
+      <div class="section-label">有無麻醉後不舒服的經歷？</div>
+      <textarea class="textarea-input" id="anes-problems" placeholder="例如：噁心、嘔吐、插管困難、術後意識混亂、過敏反應⋯（選填）" oninput="P.anesProblems=this.value" rows="3"></textarea>
+    </div>
+  </div>
+
+  <!-- Section C: 禁食時間 -->
+  <div class="acc-card" id="acc-fasting">
+    <div class="acc-header" onclick="toggleAcc('acc-fasting')">
+      <div class="acc-header-left">🍽️ 禁食時間確認</div>
+      <span class="acc-status pending" id="acc-c-status">點擊展開</span>
+      <span class="acc-toggle-icon">▼</span>
+    </div>
+    <div class="acc-body">
+      <div class="alert alert-danger" style="margin-top:14px;">
+        <span class="alert-icon">🚫</span>
+        <div>
+          <strong>禁食規範（非常重要！）</strong><br>
+          🥩 固體食物：手術前 <strong>8 小時</strong> 禁食<br>
+          🍼 母乳：手術前 <strong>4 小時</strong> 禁食<br>
+          💧 清水／清流質：手術前 <strong>2 小時</strong> 禁飲
+        </div>
+      </div>
+      <div class="section-label">📝 請記錄您最後進食與飲水時間</div>
+      <label style="font-size:17px;font-weight:600;color:var(--text-mid);">最後進食時間</label>
+      <select class="time-input" id="last-food" onchange="P.lastFood=this.value;updateFastingStatus()">
+        <option value="" disabled selected>請選擇時間</option>
+      </select>
+      <label style="font-size:17px;font-weight:600;color:var(--text-mid);margin-top:12px;display:block;">最後飲水時間</label>
+      <select class="time-input" id="last-water" onchange="P.lastWater=this.value;updateFastingStatus()">
+        <option value="" disabled selected>請選擇時間</option>
+      </select>
+      <div id="fasting-feedback" style="margin-top:10px;display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE 3: 自費項目 ===== -->
+<div class="page" id="page-3">
+  <div class="card">
+    <div class="card-title">💰 麻醉自費項目說明與選擇</div>
+    <div class="card-subtitle">以下為根據您的狀況推薦的自費項目，請選擇您的意願供醫師參考。最終由醫師評估確認。</div>
+    <div class="tw-note">🗣 台語：以下是自費選項，你可以表示有無興趣，最後還是由醫師幫你確認。</div>
+  </div>
+  <div class="alert alert-info">
+    <span class="alert-icon">ℹ️</span>
+    <span>✅ 有興趣 ／ ❓ 需要更多說明 ／ ❌ 暫不選用　→ 請依序點選每個項目，未選擇的項目醫師將於診間說明。</span>
+  </div>
+  <div id="rec-box"></div>
+</div>
+
+<!-- ===== PAGE 4: 就診提醒 ===== -->
+<div class="page" id="page-4">
+  <div class="card">
+    <div class="card-title">📋 進診間前，請主動告知醫師</div>
+    <div class="card-subtitle">以下資訊對麻醉安全非常重要，請一一確認。</div>
+    <div class="tw-note">🗣 台語：這些資訊對麻醉安全真重要，進去看診前，一定要告訴醫師。</div>
+  </div>
+  <div class="alert alert-warning">
+    <span class="alert-icon">⚠️</span>
+    <span>請點選每一項確認，代表您已準備好告知醫師該項資訊。</span>
+  </div>
+
+  <div class="checklist-item" onclick="toggleCB(this)">
+    <div class="cb-box"></div>
+    <div class="cb-text">
+      <div class="cb-main">💊 藥物過敏史</div>
+      <div class="cb-sub">您是否對任何藥物過敏？（如盤尼西林、消炎止痛藥、碘顯影劑、乳膠等）請告知過敏的藥物名稱及反應症狀。<br><span style="color:#7A9ABC;">台語：有無對藥物過敏？什麼藥？會怎樣？要告訴醫師。</span></div>
+    </div>
+  </div>
+
+  <div class="checklist-item" onclick="toggleCB(this)">
+    <div class="cb-box"></div>
+    <div class="cb-text">
+      <div class="cb-main">🚬 菸、酒、檳榔使用史</div>
+      <div class="cb-sub">長期吸菸、飲酒、嚼檳榔會影響麻醉藥物用量、氣道管理及術後恢復。請告知使用頻率及量。<br><span style="color:#7A9ABC;">台語：有無抽煙、喝酒、食檳榔的習慣？要告訴醫師。</span></div>
+    </div>
+  </div>
+
+  <div class="checklist-item" onclick="toggleCB(this)">
+    <div class="cb-box"></div>
+    <div class="cb-text">
+      <div class="cb-main">🩸 抗凝血藥物（血路藥）及停藥時間</div>
+      <div class="cb-sub">
+        是否有在服用下列藥物？<br>
+        • 阿斯匹靈（Aspirin）　• 保栓通（Clopidogrel）<br>
+        • 可邁丁（Warfarin）　• 新型口服抗凝血劑（Xarelto、Pradaxa、Eliquis）<br>
+        <strong>請明確告知停藥天數或最後服藥時間。</strong><br>
+        <span style="color:#7A9ABC;">台語：有無吃血路藥？停藥幾天了？要告訴醫師。</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="checklist-item" onclick="toggleCB(this)">
+    <div class="cb-box"></div>
+    <div class="cb-text">
+      <div class="cb-main">💉 近期使用減肥針劑或口服減重藥</div>
+      <div class="cb-sub">
+        是否近期使用 GLP-1 類減肥藥？（如 Ozempic、Wegovy、Saxenda、Mounjaro 等）<br>
+        <strong style="color:#8A2010;">⚠️ 此類藥物會延緩胃排空，增加麻醉誤吸（Aspiration）風險！</strong><br>
+        建議：每週針劑 → 停藥至少 1 週；每日針劑或口服 → 停藥 1 天<br>
+        <span style="color:#7A9ABC;">台語：近期有無打減肥針或吃減肥藥？真重要，要告訴醫師。</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert alert-danger" style="margin-top:4px;">
+    <span class="alert-icon">🚫</span>
+    <div>
+      <strong>禁食規範（再次提醒）</strong><br>
+      🥩 固體食物：手術前 <strong>8 小時</strong> 禁食　🍼 母乳：<strong>4 小時</strong>　💧 清水：<strong>2 小時</strong><br>
+      未遵守可能導致術中誤吸，造成嚴重肺炎，危及生命。<br>
+      <span style="color:#8A5A50;font-size:15px;">台語：食東西術前8小時禁食，喝水術前2小時禁飲，非常重要，要照做！</span>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:18px;border-color:#B0CEFF;background:#F8FBFF;">
+    <div class="card-title" style="color:#1A4FA0;">🏥 常見非麻醉科問題提醒</div>
+    <div class="card-subtitle">以下問題非麻醉科業務範圍，請向相關單位確認：</div>
+    <ul class="na-list">
+      <li><strong>手術需要多久時間？</strong><br><span style="color:var(--primary);">👉 請詢問您的手術醫師</span></li>
+      <li><strong>手術時間幾點？</strong><br><span style="color:var(--primary);">👉 請詢問您的手術醫師或是病房護理站</span></li>
+      <li><strong>手術怎麼開 / 外科自費需要多少錢？</strong><br><span style="color:var(--primary);">👉 請詢問您的手術醫師</span></li>
+      <li><strong>住院去哪裡辦？</strong><br><span style="color:var(--primary);">👉 請前往總院二樓住院服務中心</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ===== PAGE 5: 問答 ===== -->
+<div class="page" id="page-5">
+  <div class="card">
+    <div class="card-title">💬 麻醉問答小幫手</div>
+    <div class="card-subtitle">有任何疑問，可在此提問！超出範圍的問題，請進診間由醫師解答。</div>
+    <div class="tw-note">🗣 台語：有啥麼問題在這裡問！超出範圍的，到診間再問醫師。</div>
+  </div>
+  <div class="chat-wrap">
+    <div class="chat-msgs" id="chat-msgs">
+      <div class="chat-msg bot">
+        <div class="chat-avatar">🤖</div>
+        <div class="chat-bubble">您好！我是麻醉衛教小幫手。您可以點選下方常見問題，或直接輸入問題。<em style="color:#8A9ABC;">（若問題超出我的知識範圍，請直接詢問診間的麻醉科醫師）</em></div>
+      </div>
+    </div>
+    <div class="chat-input-zone">
+      <div class="quick-qs">
+        <button class="quick-q" onclick="ask('全身麻醉安全嗎？')">麻醉安全嗎？</button>
+        <button class="quick-q" onclick="ask('麻醉前要禁食多久？')">禁食多久？</button>
+        <button class="quick-q" onclick="ask('麻醉後多久會醒？')">多久會醒？</button>
+        <button class="quick-q" onclick="ask('什麼是BIS監測？')">什麼是BIS？</button>
+        <button class="quick-q" onclick="ask('什麼是特效肌肉鬆弛拮抗劑(Sugammadex)？')">特效肌肉鬆弛拮抗劑？</button>
+        <button class="quick-q" onclick="ask('半身麻醉會痛嗎？')">半身麻醉痛嗎？</button>
+        <button class="quick-q" onclick="ask('什麼是PCA？')">什麼是PCA？</button>
+        <button class="quick-q" onclick="ask('老人家適合麻醉嗎？')">老人適合嗎？</button>
+        <button class="quick-q" onclick="ask('什麼是HFNC？')">HFNC是什麼？</button>
+        <button class="quick-q" onclick="ask('減肥針對麻醉有影響嗎？')">減肥針影響？</button>
+        <button class="quick-q" onclick="ask('為什麼要用溫毯保溫？')">溫毯是什麼？</button>
+      </div>
+      <div class="chat-row">
+        <input type="text" class="chat-input" id="chat-in" placeholder="輸入問題…" onkeypress="if(event.key==='Enter')sendChat()">
+        <button class="chat-send" onclick="sendChat()">送出</button>
+      </div>
+    </div>
+  </div>
+  <div class="alert alert-success" style="margin-top:16px;">
+    <span class="alert-icon">✅</span>
+    <div>
+      <strong>您已完成衛教資訊閱讀！</strong><br>
+      進診間後，請主動告知麻醉科醫師相關資訊，以確保您的麻醉安全。<br>
+      <span style="font-size:15px;color:#0A5030;">台語：你已讀完了！進去看診記得告訴醫師你填的資訊。</span>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="btn-back" id="btn-back" style="display:none;" onclick="goPage(-1)">◀ 上一步</button>
+  <button class="btn-next" id="btn-next" onclick="goPage(1)">下一步 ▶</button>
+</div>
+
+<!-- FLOATING ADMIN BUTTON -->
+<button class="floating-admin" onclick="showAdminModal()" title="醫師後台">👨‍⚕️</button>
+
+<!-- ADMIN MODAL -->
+<div class="modal-overlay" id="admin-modal">
+  <div class="modal-box">
+    <div class="modal-toprow">
+      <div class="modal-title">👨‍⚕️ 醫師後台管理</div>
+      <button class="modal-close" onclick="closeAdminModal()">✕ 關閉</button>
+    </div>
+
+    <div id="pw-section">
+      <p style="font-size:17px;color:var(--text-mid);margin-bottom:12px;">請輸入後台密碼以查看病人資料</p>
+      <div class="pw-form">
+        <input type="password" class="pw-input" id="pw-input" placeholder="請輸入密碼" onkeypress="if(event.key==='Enter')checkPw()">
+        <button class="pw-submit" onclick="checkPw()">登入</button>
+      </div>
+      <div class="pw-error" id="pw-error">❌ 密碼錯誤，請再試一次</div>
+    </div>
+
+    <div class="admin-content" id="admin-content">
+      <div class="admin-actions">
+        <button class="admin-btn-action admin-btn-refresh" onclick="loadAdminData()">🔄 重新整理</button>
+        <button class="admin-btn-action admin-btn-export" onclick="exportCSV()">📥 匯出 CSV</button>
+        <button class="admin-btn-action admin-btn-clear" onclick="clearRecords()">🗑 清除所有資料</button>
+      </div>
+      <div class="records-table-wrap">
+        <table class="records-table" id="records-table">
+          <thead>
+            <tr>
+              <th>時間</th>
+              <th>姓名</th>
+              <th>年齡</th>
+              <th>身高</th>
+              <th>體重</th>
+              <th>手術類型</th>
+              <th>麻醉方式</th>
+              <th>疾病史</th>
+              <th>藥物過敏</th>
+              <th>其他過敏</th>
+              <th>麻醉史</th>
+              <th>麻醉問題</th>
+              <th>最後進食</th>
+              <th>最後飲水</th>
+              <th>自費選擇</th>
+            </tr>
+          </thead>
+          <tbody id="records-body"></tbody>
+        </table>
+      </div>
+      <div class="admin-note">
+        ℹ️ 資料儲存於本裝置（localStorage）。若需跨裝置同步，建議搭配 Google Sheets 後端。每位病人完成衛教（抵達第5頁）時自動儲存。
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ====== STATE ====== */
+const P = {
+  name: '', age: null, height: null, weight: null, surgery: null, anesthesia: null,
+  diseases: [], allergyTags: [], drugAllergy: '', otherAllergy: '', diseaseOther: '',
+  anesHistory: [], anesProblems: '',
+  lastFood: '', lastWater: '',
+  payChoices: {}
+};
+let curPage = 1;
+const TOTAL = 5;
+let recordSaved = false;
+
+/* ====== SELECTION (page 1) ====== */
+function pick(btn) {
+  const g = btn.dataset.g;
+  document.querySelectorAll(`[data-g="${g}"]`).forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  P[g] = btn.dataset.v;
+  document.getElementById('v-msg').style.display = 'none';
+}
+
+function validateP1() {
+  return P.name && P.age && P.height && P.weight && P.surgery && P.anesthesia;
+}
+
+/* ====== ACCORDION ====== */
+function toggleAcc(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+  const isOpen = el.classList.contains('open');
+  if (id === 'acc-anesthesia') {
+    document.getElementById('acc-a-status').textContent = isOpen ? '閱讀中' : '點擊展開';
+    document.getElementById('acc-a-status').className = 'acc-status ' + (isOpen ? 'done' : 'pending');
+  } else if (id === 'acc-assess') {
+    const status = document.getElementById('acc-b-status');
+    status.textContent = isOpen ? '填寫中' : '點擊展開';
+    status.className = 'acc-status ' + (isOpen ? 'done' : 'pending');
+  } else if (id === 'acc-fasting') {
+    const status = document.getElementById('acc-c-status');
+    status.textContent = isOpen ? '填寫中' : '點擊展開';
+    status.className = 'acc-status ' + (isOpen ? 'done' : 'pending');
+  }
+}
+
+/* ====== DISEASE TAGS ====== */
+function toggleDisease(el, disease) {
+  if (disease === '無以上疾病') {
+    document.querySelectorAll('#disease-tags .disease-tag').forEach(t => t.classList.remove('selected'));
+    el.classList.add('selected');
+    P.diseases = ['無以上疾病'];
+    return;
+  }
+  document.getElementById('tag-none').classList.remove('selected');
+  P.diseases = P.diseases.filter(d => d !== '無以上疾病');
+  if (el.classList.contains('selected')) {
+    el.classList.remove('selected');
+    P.diseases = P.diseases.filter(d => d !== disease);
+  } else {
+    el.classList.add('selected');
+    if (!P.diseases.includes(disease)) P.diseases.push(disease);
+  }
+}
+
+function toggleAllergyTag(el, allergy) {
+  if (allergy === '無藥物過敏') {
+    el.parentElement.querySelectorAll('.disease-tag').forEach(t => t.classList.remove('selected'));
+    el.classList.add('selected');
+    P.allergyTags = ['無藥物過敏'];
+    return;
+  }
+  el.parentElement.querySelectorAll('.disease-tag').forEach(t => {
+    if (t.textContent === '無藥物過敏') t.classList.remove('selected');
+  });
+  P.allergyTags = P.allergyTags.filter(a => a !== '無藥物過敏');
+  if (el.classList.contains('selected')) {
+    el.classList.remove('selected');
+    P.allergyTags = P.allergyTags.filter(a => a !== allergy);
+  } else {
+    el.classList.add('selected');
+    if (!P.allergyTags.includes(allergy)) P.allergyTags.push(allergy);
+  }
+}
+
+function toggleAnesHistory(el, type) {
+  if (type === '未曾接受麻醉') {
+    el.parentElement.querySelectorAll('.disease-tag').forEach(t => t.classList.remove('selected'));
+    el.classList.add('selected');
+    P.anesHistory = ['未曾接受麻醉'];
+    return;
+  }
+  el.parentElement.querySelectorAll('.disease-tag').forEach(t => {
+    if (t.textContent === '未曾接受麻醉') t.classList.remove('selected');
+  });
+  P.anesHistory = P.anesHistory.filter(h => h !== '未曾接受麻醉');
+  if (el.classList.contains('selected')) {
+    el.classList.remove('selected');
+    P.anesHistory = P.anesHistory.filter(h => h !== type);
+  } else {
+    el.classList.add('selected');
+    if (!P.anesHistory.includes(type)) P.anesHistory.push(type);
+  }
+}
+
+/* ====== FASTING FEEDBACK ====== */
+function updateFastingStatus() {
+  const fb = document.getElementById('fasting-feedback');
+  if (P.lastFood && P.lastWater) {
+    fb.style.display = 'block';
+    fb.innerHTML = `<div class="alert alert-success"><span class="alert-icon">✅</span><span>已記錄：最後進食 <strong>${P.lastFood}</strong>、最後飲水 <strong>${P.lastWater}</strong>。醫師將確認是否符合禁食規範。</span></div>`;
+    document.getElementById('acc-c-status').textContent = '已填寫 ✓';
+    document.getElementById('acc-c-status').className = 'acc-status done';
+  }
+}
+
+/* ====== BMI / AGE HELPERS ====== */
+function getMidBMI() {
+  const hMap = {'<150':145,'150-160':155,'161-170':165,'171-180':175,'>180':185};
+  const wMap = {'<50':45,'50-60':55,'61-70':65,'71-80':75,'81-90':85,'>90':98};
+  const h = (hMap[P.height] || 165) / 100;
+  const w = wMap[P.weight] || 65;
+  return w / (h * h);
+}
+function getMidAge() {
+  return {'18-40':30,'41-60':50,'61-70':65,'71-80':75,'80+':85}[P.age] || 50;
+}
+
+/* ====== PAGE NAVIGATION ====== */
+function goPage(dir) {
+  stopTTS();
+  const next = curPage + dir;
+  if (next < 1 || next > TOTAL) return;
+  if (dir > 0 && curPage === 1) {
+    if (!validateP1()) {
+      const vm = document.getElementById('v-msg');
+      vm.style.display = 'block';
+      vm.scrollIntoView({behavior:'smooth',block:'center'});
+      return;
+    }
+    buildSlideshow();
+    document.getElementById('acc-a-title').textContent = P.anesthesia + '介紹';
+  }
+  if (dir > 0 && curPage === 2) {
+    buildPage3();
+  }
+  if (next === TOTAL && !recordSaved) {
+    saveRecord();
+    recordSaved = true;
+  }
+  document.getElementById('page-' + curPage).classList.remove('active');
+  curPage = next;
+  document.getElementById('page-' + curPage).classList.add('active');
+  updateProgress();
+  updateNav();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function updateProgress() {
+  for (let i = 1; i <= TOTAL; i++) {
+    const step = document.getElementById('step-' + i);
+    const sc = document.getElementById('sc-' + i);
+    step.classList.remove('active','completed');
+    if (i < curPage) { step.classList.add('completed'); sc.innerHTML = '✓'; }
+    else if (i === curPage) { step.classList.add('active'); sc.innerHTML = i; }
+    else { sc.innerHTML = i; }
+    if (i < TOTAL) {
+      const line = document.getElementById(`line-${i}${i+1}`);
+      if (line) line.classList.toggle('done', i < curPage);
+    }
+  }
+}
+
+function updateNav() {
+  const back = document.getElementById('btn-back');
+  const next = document.getElementById('btn-next');
+  back.style.display = curPage > 1 ? 'block' : 'none';
+  if (curPage === TOTAL) {
+    next.style.display = 'none';
+  } else {
+    next.style.display = 'block';
+    const labels = ['','下一步 ▶','下一步 ▶','下一步 ▶','下一步 ▶',''];
+    next.textContent = labels[curPage];
+  }
+}
+
+/* ====== SLIDESHOW DATA ====== */
+const SLIDES = {
+  '全身麻醉': [
+    {icon:'🏥',title:'為什麼需要全身麻醉？',body:`<strong>需要全身麻醉的常見情況：</strong>\n\n🔹 <strong>非下半身手術</strong>（胸腔、腦部、上腹部、耳鼻喉等）\n🔹 <strong>手術時間較長</strong>，需要長時間維持穩定狀態\n🔹 <strong>外科醫師需要您完全不動</strong>，確保手術精準安全\n🔹 <strong>肌肉需要完全放鬆</strong>才能順利完成手術\n\n👉 全身麻醉讓您在完全無意識的狀態下安全完成手術，是現代醫學最成熟的麻醉方式之一。`,tw:'台語：全身麻醉讓你整個人睏去，手術過程完全無感覺、無痛、無記憶，手術完藥退就醒來。'},
+    {icon:'🫁',title:'為什麼需要插呼吸管？',body:`全身麻醉使用<strong>肌肉鬆弛劑</strong>讓全身肌肉徹底放鬆，因此<strong>呼吸肌也暫時無力自主呼吸</strong>，需要呼吸管代替您呼吸。\n\n✅ <strong>氣管內管（Endotracheal Tube）</strong>\n深入氣管，適合較長手術或需完全保護氣道的手術\n\n✅ <strong>喉罩（LMA / Laryngeal Mask Airway）</strong>\n放置喉嚨入口，較舒適，適合短時間手術，術後喉嚨不適感較少`,tw:'台語：打了肌肉放鬆藥，自己無法呼吸，所以需要呼吸管幫你呼吸，確保氧氣足夠，這是在保護你。'},
+    {icon:'🔄',title:'全身麻醉四大流程',body:`<strong>① 入睡</strong>\n點滴給藥，約 30–60 秒迅速平穩入睡\n\n<strong>② 術中</strong>\n確認睡著後插管；全程監控心跳、血壓、血氧\n\n<strong>③ 甦醒</strong>\n停止麻藥 → 聽見呼喚請<strong>大口深呼吸</strong>\n評估穩定後拔管\n\n<strong>④ 觀察</strong>\n送恢復室觀察約 <strong>1 小時</strong>，確認穩定返回病房`,tw:'台語：打點滴後快速睏去，醫師全程監測，術後聽到叫聲大口深呼吸，觀察約1小時後回病房。'},
+    {icon:'😟',title:'常見術後不適（多為暫時性）',danger:true,body:`以下症狀通常在 <strong>1–2 天內</strong>自然改善：\n\n• <strong>噁心、嘔吐</strong>（有預防止吐藥）\n• <strong>喉嚨痛、聲音沙啞</strong>（插管引起，1–2 天恢復）\n• <strong>傷口疼痛</strong>（有完善多模式止痛計畫）\n• <strong>寒顫發抖</strong>（術中保暖毯可有效預防）\n• <strong>術後譫妄</strong>（短暫意識混亂，年長者較常見）`,tw:'台語：術後可能會想吐、喉嚨痛、冷、傷口痛，這些都是暫時的，醫師有準備藥物處理。'},
+    {icon:'⚠️',title:'特殊狀況與嚴重風險',danger:true,body:`以下風險機率<strong>極低</strong>，但麻醉科醫師已有完善應對準備：\n\n🔴 <strong>術中輸血需求</strong>：視手術失血情況而定\n🔴 <strong>氣管痙攣</strong>：呼吸道敏感者需特別注意\n🔴 <strong>心血管風險</strong>：心律不整、血栓、腦中風\n🔴 <strong>術中知覺（Awareness）</strong>：約萬分之一，BIS腦波監測可大幅降低\n🔴 <strong>惡性高熱</strong>：遺傳性、極罕見（請告知家族史）\n\n→ <strong>麻醉科醫師全程陪伴守護，請放心！</strong>`,tw:'台語：這些嚴重問題機率很低，醫師全程在旁保護你，你只要放心睏去就好。'}
+  ],
+  '半身麻醉': [
+    {icon:'💉',title:'為什麼選擇半身麻醉？',body:`半身麻醉（脊椎麻醉）是在脊椎附近注射局部麻醉藥，讓腰部以下暫時失去感覺。\n\n<strong>適合手術：</strong> 下腹部 / 下肢手術（骨科、泌尿科、婦產科、剖腹產）\n\n<strong>優點：</strong>\n✅ <strong>不需插呼吸管</strong>，保留自主呼吸\n✅ 術後意識<strong>較清醒</strong>，恢復快\n✅ 可同時注入脊髓嗎啡，提供 <strong>24–48 小時長效止痛</strong>\n✅ 術後噁心嘔吐機率大幅降低`,tw:'台語：半身麻醉下半身無感覺，頭腦還是清醒的，不用插管，術後恢復快。'},
+    {icon:'🦐',title:'關鍵配合動作：「煮熟的蝦子」',body:`進行脊椎注射時，請配合以下姿勢：\n\n🦐 <strong>側躺，身體蜷縮像「煮熟的蝦子」</strong>\n\n  👉 <strong>頭往下看肚子</strong>\n  👉 <strong>膝蓋彎曲靠向肚子</strong>\n  👉 <strong>背部盡量拱起</strong>，讓脊椎間隙張開\n\n注射前會先在皮膚打局部麻醉藥，<strong>不會很痛</strong>。\n\n⚠️ 注射後下半身出現溫熱感、麻木感 → 這是<strong>正常現象</strong>！`,tw:'台語：側躺像蝦子一樣蜷縮，頭往下、膝蓋靠肚子、背部拱起，幫助醫師下針。麻麻熱熱的是正常的！'},
+    {icon:'⚠️',title:'副作用、風險與重要提醒',danger:true,body:`<strong>常見副作用（多為暫時性）：</strong>\n• 血壓下降（可立即注射升壓藥處理）\n• 噁心嘔吐、全身發抖\n• 暫時性頭痛（平躺可緩解）\n• 排尿困難（可能需短暫導尿）\n\n<strong>少見併發症（機率極低）：</strong>\n• 感染 / 出血、神經傷害\n\n⚠️ <strong style="color:#FFD04D;">重要！抗凝血藥物（血路藥）</strong>\n務必提前告知服用種類與<strong>停藥時間</strong>！\n<strong>未依規定停藥，恐有脊椎血腫風險！</strong>`,tw:'台語：可能血壓下降、頭痛、排尿困難，醫師會處理。血路藥一定要照醫師指示停藥，非常重要！'}
+  ],
+  '靜脈麻醉': [
+    {icon:'💊',title:'靜脈麻醉：就像睡了一場午覺',body:`靜脈麻醉透過點滴給藥，讓您進入<strong>淺層睡眠（鎮靜）狀態</strong>。\n\n<strong>適用時機：</strong>\n• 手術時間 <strong>< 1 小時</strong>的短小手術\n• 門診手術、內視鏡檢查（胃鏡、大腸鏡）\n• 搭配局部麻醉使用，增加舒適度\n\n<strong>特點：</strong>\n✅ <strong>保留自主呼吸</strong>（不需插管）\n✅ 恢復快，約 15–30 分鐘可清醒\n✅ 大多不記得手術過程`,tw:'台語：靜脈麻醉就像睡個短短的午覺，適合短時間手術，不用插管，恢復快。'},
+    {icon:'⚠️',title:'靜脈麻醉特殊風險與注意事項',danger:true,body:`<strong>需特別注意：</strong>\n• <strong>嗆咳風險</strong>：口水較多，全程監測血氧飽和度\n• <strong>睡眠呼吸中止症 / 體重過重</strong>者：可能需放置「鼻咽呼吸道」輔助氣流\n• 術後可能有<strong>短暫意識模糊</strong>（尤其年長者）\n\n‼️ <strong>雖然是淺層麻醉，仍需嚴格禁食！</strong>\n🥩 固體食物：術前 <strong>8 小時</strong>　💧 清水：術前 <strong>2 小時</strong>`,tw:'台語：口水多有嗆咳風險，醫師全程監測。靜脈麻醉也要嚴格禁食，不能輕忽！'}
+  ]
+};
+
+const COMMON_SLIDES = [
+  {icon:'🌡️',title:'術中主動保溫：溫毯守護您的體溫',body:`⚠️ <strong>迷思破解</strong>：「睡著了就不冷了吧？」\n❌ <strong>錯！睡著了，身體反而更無法保護體溫！</strong>\n\n手術室環境低溫（約 18–20℃），麻醉後 1 小時內體溫可能下降達 <strong>1.6℃</strong>！\n\n<strong>體溫過低（&lt; 36℃）的危害：</strong>\n❄️ 增加傷口感染機率　❄️ 凝血功能變差\n❄️ 麻醉代謝變慢　❄️ 心臟負擔增加\n\n✅ 我們採用<strong>醫療級溫風機 + 單次拋棄式保暖毯</strong>\n全程主動維持體溫 36.5℃`,tw:'台語：睏去了身體更無法保溫！溫毯幫你全程主動保暖到36.5℃，術後不冷、不發抖，醒來更舒服。'},
+  {icon:'🙋',title:'進診間前可以問醫師的問題',body:`到了診間，您可以主動詢問麻醉科醫師：\n\n• 我的麻醉方式有其他選擇嗎？\n• 我的身體狀況有哪些麻醉風險？\n• 哪些藥物需要在術前停藥？\n• 術後止痛計畫是什麼？\n• 我是否需要額外的監測項目？\n• 術後需要注意什麼事情？`,tw:'台語：有任何問題，直接問麻醉醫師，不用怕，醫師歡迎你問。'}
+];
+
+let slides = [], curSlide = 0;
+
+function buildSlideshow() {
+  const typeSlides = SLIDES[P.anesthesia] || SLIDES['全身麻醉'];
+  slides = [...typeSlides, ...COMMON_SLIDES];
+  curSlide = 0;
+  renderSlide();
+}
+
+function renderSlide() {
+  const host = document.getElementById('slide-host');
+  host.innerHTML = '';
+  const s = slides[curSlide];
+  const div = document.createElement('div');
+  div.className = 'slide active' + (s.danger ? ' danger-slide' : '');
+  div.innerHTML = `<div class="slide-icon">${s.icon}</div><div class="slide-title">${s.title}</div><div class="slide-body">${s.body}</div>${s.tw?`<div class="slide-tw">🗣 ${s.tw}</div>`:''}`;
+  host.appendChild(div);
+  document.getElementById('slide-ctr').textContent = `${curSlide+1} / ${slides.length}`;
+}
+
+function nextSlide() { stopTTS(); if (curSlide < slides.length-1) { curSlide++; renderSlide(); } }
+function prevSlide() { stopTTS(); if (curSlide > 0) { curSlide--; renderSlide(); } }
+
+/* ====== TTS ====== */
+function playTTS() {
+  if (!('speechSynthesis' in window)) { alert('您的瀏覽器不支援語音朗讀功能。'); return; }
+  if (window.speechSynthesis.speaking) {
+    window.speechSynthesis.cancel();
+    document.getElementById('tts-btn').textContent = '🔊 語音';
+    return;
+  }
+  const s = slides[curSlide];
+  const text = (s.title + '。' + s.body + (s.tw?'。'+s.tw:'')).replace(/<[^>]+>/g,'');
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'zh-TW'; u.rate = 1.0;
+  u.onend = () => { document.getElementById('tts-btn').textContent = '🔊 語音'; };
+  document.getElementById('tts-btn').textContent = '⏹ 停止';
+  window.speechSynthesis.speak(u);
+}
+function stopTTS() {
+  if ('speechSynthesis' in window && window.speechSynthesis.speaking) {
+    window.speechSynthesis.cancel();
+    const btn = document.getElementById('tts-btn');
+    if (btn) btn.textContent = '🔊 語音';
+  }
+}
+
+/* ====== BUILD PAGE 3: SELF-PAY ====== */
+const REC_ITEMS = [];
+
+function buildPage3() {
+  const box = document.getElementById('rec-box');
+  box.innerHTML = '';
+  REC_ITEMS.length = 0;
+  const bmi = getMidBMI();
+  const age = getMidAge();
+
+  const recs = [];
+  recs.push({key:'warmth', icon:'🌡️', title:'術中主動保溫：溫毯', badge:'全體病人建議',
+    body:`麻醉後身體<strong>無法自行調節體溫</strong>，手術室低溫加上麻醉藥擴張血管，體溫可在 1 小時內下降超過 1.6℃。體溫過低會增加感染機率、影響凝血、延長甦醒時間。<br>我們採用<strong>醫療級溫風機 + 單次拋棄式保暖毯</strong>，全程主動維持體溫 36.5℃，讓您<strong>溫暖舒適地甦醒</strong>，減少術後發抖。`,
+    tw:'台語：溫毯幫你全程保暖到36.5℃，術後不冷、不發抖，醒來更舒服。每個病人都有新的、衛生！'});
+
+  if (age >= 70) {
+    recs.push({key:'bis', icon:'🧠', title:'BIS 腦波監測貼片', badge:'年齡 ≥ 70 歲建議',
+      body:`您的年齡為 <strong>${P.age} 歲</strong>。年長者腦部對麻醉藥較敏感，容易出現麻醉過深或術後認知功能障礙（POCD）。BIS 監測貼片貼於額頭，可即時顯示麻醉深度數值，幫助醫師<strong>精確調控用藥</strong>，降低上述風險。`,
+      tw:'台語：年紀大，腦部對麻藥敏感，BIS貼片幫助醫師控制麻醉深度，減少術後頭腦不清楚的風險。'});
+  }
+
+  if (bmi > 30) {
+    recs.push({key:'hfnc', icon:'💨', title:`高流量氧氣鼻導管（HFNC）`, badge:`估算 BMI ${bmi.toFixed(1)} > 30`,
+      body:`根據您的身高體重區間，估算 BMI 約 <strong>${bmi.toFixed(1)}</strong>。BMI 超過 30 的患者，氣道及呼吸功能可能受影響。HFNC 可提供高流量加溫加濕氧氣，比傳統面罩舒適，有效預防低血氧。`,
+      tw:'台語：體重較重，呼吸會受影響。HFNC高流量氧氣鼻導管幫助你術前後保持足夠氧氣，比傳統面罩舒適。'});
+  }
+
+  if (P.anesthesia === '全身麻醉') {
+    recs.push({key:'nmt', icon:'💪', title:'神經肌肉監測（NMT）+ 特效肌肉鬆弛拮抗劑 (Sugammadex)', badge:'全身麻醉建議',
+      body:`全身麻醉通常需使用<strong>肌肉鬆弛劑</strong>。若術後肌力未完全恢復，可能導致呼吸無力。NMT 可即時確認肌力恢復程度。<strong>Sugammadex</strong> 可在幾分鐘內完全抵消肌鬆藥效果，確保您清醒時肌力正常。`,
+      tw:'台語：全身麻醉打了肌肉放鬆藥，Sugammadex可以快速讓肌力恢復正常，不會術後還沒力氣。'});
+  }
+
+  // Pain management items
+  const painItems = [
+    {key:'nerve_block', icon:'🧠', title:'神經阻斷術（Nerve Block）',
+      body:`在特定神經附近注射局部麻醉藥，讓手術部位長時間不痛（可達 12–24 小時），大幅<strong>減少術後嗎啡類止痛藥的需求</strong>。<br><span style="color:#5A3C8F;font-size:16px;">🗣 台語：在神經邊邊注射麻藥，讓手術部位長時間無痛，少用止痛藥。</span>`},
+    {key:'spinal_morphine', icon:'💉', title:'脊髓嗎啡（Spinal Morphine）',
+      body:`在進行半身麻醉時，同步注入少量嗎啡進入脊髓液，可提供術後長效止痛（18–24 小時）。適合下腹部、下肢、產科手術。<br><span style="color:#5A3C8F;font-size:16px;">🗣 台語：半身麻醉時同時打少量止痛藥，術後長時間無痛。</span>`},
+    {key:'dynastat', icon:'💊', title:'非嗎啡類長效靜脈止痛藥',
+      body:`<strong>Dynastat（帕瑞昔布）</strong>：注射型消炎止痛，效果強、副作用少<br><strong>Acetamol（靜脈乙醯胺酚）</strong>：溫和退燒止痛，安全性高，可合併使用<br><span style="color:#5A3C8F;font-size:16px;">🗣 台語：無嗎啡的止痛藥，安全、副作用少，效果也不差。</span>`},
+    {key:'pca', icon:'🎛', title:'自控式止痛（PCA）',
+      body:`術後連接一個裝置，您感到疼痛時可<strong>自行按壓按鈕</strong>給藥。系統設有安全鎖，防止用藥過量。讓您掌控自己的止痛節奏。<br><span style="color:#5A3C8F;font-size:16px;">🗣 台語：術後痛了就自己按按鈕給止痛藥，安全不會過量，自己控制。</span>`}
+  ];
+
+  const allItems = [...recs.map(r => ({...r, isRec:true})), ...painItems.map(p => ({...p, isRec:false}))];
+  allItems.forEach(item => {
+    REC_ITEMS.push(item);
+    const c = document.createElement('div');
+    c.className = 'rec-card ' + (item.isRec ? 'rec-yes' : 'rec-pain');
+    if (item.isRec && item.key === 'warmth') c.style.borderLeftColor = '#F0A500';
+    c.innerHTML = `
+      <div class="rec-head">
+        ${item.icon} ${item.title}
+        ${item.badge ? `<span class="rec-badge" style="${item.key==='warmth'?'background:#F0A500;color:#1A0A00;':''}">⭐ ${item.badge}</span>`:''}
+      </div>
+      <div class="rec-body">
+        ${item.body}
+        ${item.tw ? `<div class="tw-note" style="margin-top:10px;">🗣 ${item.tw}</div>`:''}
+      </div>
+      <div class="pay-choices">
+        <button class="pay-btn yes-btn" onclick="selectPay(this,'${item.key}','yes')">✅ 有興趣</button>
+        <button class="pay-btn maybe-btn" onclick="selectPay(this,'${item.key}','maybe')">❓ 需要說明</button>
+        <button class="pay-btn no-btn" onclick="selectPay(this,'${item.key}','no')">❌ 暫不選用</button>
+      </div>
+    `;
+    box.appendChild(c);
+  });
+}
+
+function selectPay(btn, key, choice) {
+  const choices = btn.parentElement.querySelectorAll('.pay-btn');
+  choices.forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  P.payChoices[key] = choice;
+}
+
+/* ====== CHECKLIST ====== */
+function toggleCB(item) {
+  item.classList.toggle('checked');
+  item.querySelector('.cb-box').innerHTML = item.classList.contains('checked') ? '✓' : '';
+}
+
+/* ====== SAVE RECORD ====== */
+function saveRecord() {
+  const record = {
+    timestamp: new Date().toLocaleString('zh-TW'),
+    name: P.name || '（未填）',
+    age: P.age || '', height: P.height || '', weight: P.weight || '',
+    surgery: P.surgery || '', anesthesia: P.anesthesia || '',
+    diseases: [...P.diseases, P.diseaseOther ? '其他:'+P.diseaseOther : ''].filter(Boolean).join('、') || '未填',
+    allergyTags: [...P.allergyTags, P.drugAllergy ? '其他:'+P.drugAllergy : ''].filter(Boolean).join('、') || '未填',
+    otherAllergy: P.otherAllergy || '未填',
+    anesHistory: P.anesHistory.join('、') || '未填',
+    anesProblems: P.anesProblems || '無',
+    lastFood: P.lastFood || '未填',
+    lastWater: P.lastWater || '未填',
+    payChoices: JSON.stringify(P.payChoices)
+  };
+  try {
+    const records = JSON.parse(localStorage.getItem('anesthesia_records') || '[]');
+    records.push(record);
+    localStorage.setItem('anesthesia_records', JSON.stringify(records));
+  } catch(e) { console.warn('localStorage not available'); }
+}
+
+/* ====== QA CHATBOT ====== */
+const QA = [
+  {kw:['安全','危險','會死','放心'],a:`現代麻醉非常安全！直接因麻醉導致的嚴重併發症機率約十萬分之一。麻醉科醫師和護理師會在手術全程持續監測您的心跳、血壓、血氧及呼吸，隨時處置任何異狀。\n\n台語：現代麻醉真安全，醫師和護理師全程盯著你，不用太擔心。`},
+  {kw:['禁食','空腹','吃東西','喝水','幾小時','進食'],a:`禁食規範如下（非常重要！）：\n\n🥩 固體食物：手術前 8 小時 禁食\n🍼 母乳：手術前 4 小時 禁食\n💧 清水 / 清流質：手術前 2 小時 禁飲\n\n台語：固體食物術前8小時禁食，清水術前2小時禁飲，非常重要，一定要遵守！`},
+  {kw:['多久','幾點','清醒','甦醒','醒來'],a:`各種麻醉清醒時間不同：\n\n😴 全身麻醉：手術結束後約 10–30 分鐘開始清醒，在恢復室觀察 30–60 分鐘後轉病房\n💉 半身麻醉：您全程清醒；下半身感覺在術後 2–4 小時逐漸恢復\n💊 靜脈麻醉：通常恢復最快，約 15–30 分鐘即可清醒\n\n台語：全身麻醉大約術後30分鐘清醒，靜脈麻醉恢復最快。`},
+  {kw:['bis','腦波','監測貼片'],a:`BIS（Bispectral Index）是貼在額頭的腦波監測貼片，可即時顯示麻醉深度數值（0–100）：\n\n• 100 = 完全清醒\n• 40–60 = 適當全身麻醉深度\n• < 40 = 過深\n\n✅ 幫助醫師精確調控麻醉藥量，降低術中知覺風險，年長者特別建議使用。\n\n台語：BIS是貼在額頭的貼片，幫醫師監測麻醉有多深，特別是老人家建議使用。`},
+  {kw:['sugammadex','肌肉鬆弛','逆轉','拮抗劑'],a:`特效肌肉鬆弛拮抗劑 (Sugammadex) 是「肌肉鬆弛逆轉藥」。全身麻醉後，可在 1–3 分鐘內完全抵消肌鬆藥效果，確保您清醒時肌力正常、可以自主呼吸。\n\n台語：Sugammadex讓肌肉放鬆藥快速解除，術後肌力快速恢復，很安全。`},
+  {kw:['半身','脊椎','腰麻','痛嗎','半麻'],a:`半身麻醉注射前，醫師會先在皮膚打局部麻醉藥，所以穿刺時通常只有輕微壓力感，不會很痛。手術過程中，您的下半身完全沒有感覺。\n\n台語：打針前先打局部麻藥，不會很痛。手術時下半身完全無感覺，你可以選擇睏一下或保持清醒。`},
+  {kw:['pca','自控','止痛按鈕','自控式'],a:`PCA（Patient-Controlled Analgesia）是病患自控式止痛裝置。術後感到疼痛時按下按鈕即可獲得止痛藥。系統設有安全鎖，按太頻繁也不會過量。\n\n台語：術後痛了就自己按按鈕給止痛藥，安全不會過量，自己控制，比等護理師還快。`},
+  {kw:['老人','年長','高齡','長輩'],a:`高齡患者可以接受麻醉，但需要更細心的評估和監測。建議使用 BIS 腦波監測（降低術後認知功能障礙），麻醉藥劑量通常較年輕人低。\n\n台語：老人家也可以做麻醉，醫師會特別注意，藥量會調整，也建議用BIS貼片監測。`},
+  {kw:['hfnc','高流量','鼻導管','氧氣'],a:`HFNC（High Flow Nasal Cannula）是高流量鼻導管氧氣裝置。可提供高達 60 L/min 的加溫加濕氧氣，比傳統氧氣面罩更舒適，適合 BMI 較高或有呼吸道問題的患者。\n\n台語：HFNC是鼻子插管給高流量氧氣，比一般面罩舒適，特別適合體重較重的人。`},
+  {kw:['過敏','藥物過敏'],a:`藥物過敏史對麻醉安全非常重要！請主動告知麻醉醫師過敏的藥物名稱與反應（皮疹、呼吸困難、休克等）。麻醉藥物種類很多，醫師會根據您的過敏史選擇最安全的藥物。\n\n台語：藥物過敏一定要告訴醫師，這真的很重要，醫師會選不會讓你過敏的藥。`},
+  {kw:['噁心','嘔吐','想吐'],a:`術後噁心嘔吐（PONV）是全身麻醉常見副作用，發生率約 20–30%。預防方式包含：術前給予止吐藥（如 Ondansetron、Dexamethasone）、選用 Propofol 維持麻醉。\n\n台語：全身麻醉後可能想吐，醫師有預防止吐的藥，若還是想吐要告訴護理師。`},
+  {kw:['抗凝血','血路藥','阿斯匹靈','warfarin','停藥'],a:`服用抗凝血藥物需在術前按醫師指示停藥：\n• 阿斯匹靈：通常停 5–7 天\n• 保栓通：通常停 5–7 天\n• 可邁丁（Warfarin）：通常停 5 天，需監測 INR\n• Xarelto / Pradaxa / Eliquis：通常停 2–3 天\n\n⚠️ 請勿自行停藥！需和開立藥物的醫師先討論。\n\n台語：血路藥要照醫師指示停藥，不要自己停，要和開藥的醫師先討論才安全。`},
+  {kw:['減肥針','glp-1','ozempic','saxenda','減重'],a:`GLP-1 類減肥藥會顯著延緩胃部排空，即使已禁食，胃內仍可能殘留食物，大幅增加麻醉時誤吸風險！\n\n建議停藥時間：\n• 每週注射型（如 Ozempic）：手術前停藥至少 7 天\n• 每日注射型：停藥至少 1 天\n• 口服型：停藥 1 天\n\n台語：減肥針讓胃排空變慢，術前要停藥，也要告訴醫師你在用，非常重要！`},
+  {kw:['溫毯','保溫','保暖','體溫','發抖'],a:`術中主動保溫是高品質麻醉的重要指標！麻醉藥物使血管擴張，體溫快速散失。體溫過低（< 36℃）會增加傷口感染機率、影響凝血、延長甦醒時間。\n\n✅ 我們採用醫療級溫風機 + 單次拋棄式保暖毯，精準維持體溫36.5℃。\n\n台語：溫毯幫你全程主動保暖到36.5℃，術後不冷、不發抖，醒來更舒服。`},
+  {kw:['多久時間','手術多久','開多久'],a:`「手術需要多久時間？」\n👉 請詢問您的手術醫師。`},
+  {kw:['住院','哪裡辦'],a:`「住院去哪裡辦？」\n👉 請前往總院二樓住院服務中心。`}
+];
+
+function findAns(q) {
+  const lower = q.toLowerCase().trim();
+  for (const qa of QA) for (const k of qa.kw) if (lower.includes(k.toLowerCase())) return qa.a;
+  return null;
+}
+
+function addMsg(text, isBot) {
+  const cont = document.getElementById('chat-msgs');
+  const d = document.createElement('div');
+  d.className = 'chat-msg ' + (isBot ? 'bot' : 'user');
+  d.innerHTML = isBot
+    ? `<div class="chat-avatar">🤖</div><div class="chat-bubble">${text}</div>`
+    : `<div class="chat-bubble">${text}</div><div class="chat-avatar">👤</div>`;
+  cont.appendChild(d);
+  cont.scrollTop = cont.scrollHeight;
+}
+
+function ask(q) {
+  addMsg(q, false);
+  setTimeout(() => {
+    const ans = findAns(q);
+    addMsg(ans || `這個問題較超出我的資料範圍。\n\n🩺 <strong>請進診間後，直接詢問麻醉科醫師</strong>，醫師將為您詳細解說。`, true);
+  }, 700);
+}
+
+function sendChat() {
+  const inp = document.getElementById('chat-in');
+  const q = inp.value.trim();
+  if (!q) return;
+  inp.value = '';
+  ask(q);
+}
+
+/* ====== ADMIN PANEL ====== */
+const ADMIN_PW = 'AN';
+
+function showAdminModal() {
+  document.getElementById('admin-modal').classList.add('visible');
+  document.getElementById('pw-input').focus();
+  document.getElementById('pw-input').value = '';
+  document.getElementById('pw-error').style.display = 'none';
+  document.getElementById('admin-content').classList.remove('visible');
+  document.getElementById('pw-section').style.display = 'block';
+}
+
+function closeAdminModal() {
+  document.getElementById('admin-modal').classList.remove('visible');
+}
+
+function checkPw() {
+  const val = document.getElementById('pw-input').value;
+  if (val === ADMIN_PW) {
+    document.getElementById('pw-error').style.display = 'none';
+    document.getElementById('pw-section').style.display = 'none';
+    document.getElementById('admin-content').classList.add('visible');
+    loadAdminData();
+  } else {
+    document.getElementById('pw-error').style.display = 'block';
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
+  }
+}
+
+function loadAdminData() {
+  const tbody = document.getElementById('records-body');
+  tbody.innerHTML = '';
+  let records = [];
+  try { records = JSON.parse(localStorage.getItem('anesthesia_records') || '[]'); } catch(e) {}
+
+  if (records.length === 0) {
+    tbody.innerHTML = '<tr class="no-data-row"><td colspan="15">尚無病人資料。病人完成衛教後資料將自動儲存於此。</td></tr>';
+    return;
+  }
+
+  records.forEach((r, idx) => {
+    const payHtml = (() => {
+      try {
+        const choices = typeof r.payChoices === 'string' ? JSON.parse(r.payChoices) : r.payChoices;
+        const keyNames = {warmth:'溫毯',bis:'BIS',hfnc:'HFNC',nmt:'NMT/Sugammadex',nerve_block:'神經阻斷',spinal_morphine:'脊髓嗎啡',dynastat:'止痛藥',pca:'PCA'};
+        return Object.entries(choices).map(([k,v]) => {
+          const cls = v==='yes'?'yes':v==='maybe'?'maybe':'no';
+          const label = v==='yes'?'有興趣':v==='maybe'?'需說明':'暫不選';
+          return `<span class="pay-chip ${cls}">${keyNames[k]||k}:${label}</span>`;
+        }).join('');
+      } catch(e) { return r.payChoices || ''; }
+    })();
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="white-space:nowrap;font-size:13px;">${r.timestamp||''}</td>
+      <td><strong>${r.name||''}</strong></td>
+      <td>${r.age||''}</td>
+      <td>${r.height||''}</td>
+      <td>${r.weight||''}</td>
+      <td>${r.surgery||''}</td>
+      <td>${r.anesthesia||''}</td>
+      <td>${r.diseases||''}</td>
+      <td>${r.allergyTags||''}</td>
+      <td>${r.otherAllergy||''}</td>
+      <td>${r.anesHistory||''}</td>
+      <td>${r.anesProblems||''}</td>
+      <td>${r.lastFood||''}</td>
+      <td>${r.lastWater||''}</td>
+      <td>${payHtml}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function clearRecords() {
+  if (confirm('確定要清除所有病人資料嗎？此操作無法復原。')) {
+    localStorage.removeItem('anesthesia_records');
+    loadAdminData();
+  }
+}
+
+function exportCSV() {
+  let records = [];
+  try { records = JSON.parse(localStorage.getItem('anesthesia_records') || '[]'); } catch(e) {}
+  if (records.length === 0) { alert('目前沒有資料可匯出。'); return; }
+
+  const headers = ['時間','姓名','年齡','身高','體重','手術類型','麻醉方式','疾病史','藥物過敏','其他過敏','麻醉史','麻醉問題','最後進食','最後飲水','自費選擇'];
+  const rows = records.map(r => {
+    let payStr = '';
+    try {
+      const choices = typeof r.payChoices === 'string' ? JSON.parse(r.payChoices) : r.payChoices;
+      const keyNames = {warmth:'溫毯',bis:'BIS',hfnc:'HFNC',nmt:'NMT',nerve_block:'神經阻斷',spinal_morphine:'脊髓嗎啡',dynastat:'止痛藥',pca:'PCA'};
+      payStr = Object.entries(choices).map(([k,v]) => `${keyNames[k]||k}:${v}`).join('; ');
+    } catch(e) { payStr = r.payChoices || ''; }
+    return [r.timestamp,r.name,r.age,r.height,r.weight,r.surgery,r.anesthesia,r.diseases,r.allergyTags,r.otherAllergy,r.anesHistory,r.anesProblems,r.lastFood,r.lastWater,payStr].map(v => `"${(v||'').replace(/"/g,'""')}"`).join(',');
+  });
+
+  const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `麻醉衛教資料_${new Date().toLocaleDateString('zh-TW')}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+// Close modal when clicking outside
+document.getElementById('admin-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeAdminModal();
+});
+
+/* ====== INIT ====== */
+updateNav();
+
+(function initTimeOptions() {
+  const timeOpts = [];
+  for (let i = 0; i < 24; i++) {
+    const hr = i.toString().padStart(2,'0');
+    timeOpts.push(`${hr}:00`);
+    timeOpts.push(`${hr}:30`);
+  }
+  const foodSel = document.getElementById('last-food');
+  const waterSel = document.getElementById('last-water');
+  timeOpts.forEach(t => {
+    foodSel.add(new Option(t,t));
+    waterSel.add(new Option(t,t));
+  });
+})();
+</script>
+</body>
+</html>
